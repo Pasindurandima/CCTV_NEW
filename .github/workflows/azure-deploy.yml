@@ -1,10 +1,7 @@
-# Docs for the Azure Web Apps Deploy action:
+# Docs for Azure Web Apps Deploy:
 # https://github.com/Azure/webapps-deploy
 
-# More GitHub Actions for Azure:
-# https://github.com/Azure/actions
-
-name: Build and deploy JAR app to Azure Web App - pasindu-checkin-api
+name: Build and deploy Spring Boot JAR to Azure Web App
 
 on:
   push:
@@ -15,6 +12,7 @@ on:
 jobs:
 
   build:
+
     runs-on: ubuntu-latest
 
     permissions:
@@ -26,40 +24,26 @@ jobs:
         uses: actions/checkout@v4
 
 
-      - name: Set up Java version
+      - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'microsoft'
 
 
-      # Build Spring Boot backend
-      - name: Build with Maven
+      - name: Build Spring Boot Application
         working-directory: backend
         run: |
           chmod +x mvnw
-          ./mvnw clean install -DskipTests
+          ./mvnw clean package -DskipTests
 
 
-      # Upload generated JAR
-      - name: Upload artifact for deployment job
+      - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
           name: java-app
           path: backend/target/*.jar
 
-            # Configure database password in Azure App Service
-      - name: Configure Azure App Settings
-        uses: azure/appservice-settings@v1
-        with:
-          app-name: 'pasindu-checkin-api'
-          slot-settings: |
-            [
-              {
-                "name": "DB_PASSWORD",
-                "value": "${{ secrets.DB_PASSWORD }}"
-              }
-            ]
 
 
   deploy:
@@ -75,15 +59,13 @@ jobs:
 
     steps:
 
-      # Download JAR from build job
-      - name: Download artifact from build job
+      - name: Download JAR artifact
         uses: actions/download-artifact@v4
         with:
           name: java-app
           path: .
 
 
-      # Login to Azure
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -92,11 +74,18 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B43506646BB340F0A72F4CB0A9C97F5D }}
 
 
-      # Deploy JAR to Azure Web App
       - name: Deploy to Azure Web App
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'pasindu-checkin-api'
           slot-name: 'Production'
           package: '*.jar'
+
+          app-settings-json: |
+            [
+              {
+                "name": "DB_PASSWORD",
+                "value": "${{ secrets.DB_PASSWORD }}",
+                "slotSetting": false
+              }
+            ]
