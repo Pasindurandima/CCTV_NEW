@@ -9,6 +9,7 @@ on:
       - main
   workflow_dispatch:
 
+
 jobs:
 
   build:
@@ -74,18 +75,33 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B43506646BB340F0A72F4CB0A9C97F5D }}
 
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
+      - name: Configure Azure App Settings
+        uses: azure/appservice-settings@v1
         with:
           app-name: 'pasindu-checkin-api'
-          slot-name: 'Production'
-          package: '*.jar'
-
           app-settings-json: |
             [
+              {
+                "name": "SPRING_DATASOURCE_URL",
+                "value": "${{ secrets.SPRING_DATASOURCE_URL }}",
+                "slotSetting": false
+              },
+              {
+                "name": "SPRING_DATASOURCE_USERNAME",
+                "value": "${{ secrets.SPRING_DATASOURCE_USERNAME }}",
+                "slotSetting": false
+              },
               {
                 "name": "DB_PASSWORD",
                 "value": "${{ secrets.DB_PASSWORD }}",
                 "slotSetting": false
               }
             ]
+
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'pasindu-checkin-api'
+          slot-name: 'Production'
+          package: '*.jar'
