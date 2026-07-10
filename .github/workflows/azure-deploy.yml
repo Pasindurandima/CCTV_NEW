@@ -48,6 +48,18 @@ jobs:
           name: java-app
           path: backend/target/*.jar
 
+            # Configure database password in Azure App Service
+      - name: Configure Azure App Settings
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: 'pasindu-checkin-api'
+          slot-settings: |
+            [
+              {
+                "name": "DB_PASSWORD",
+                "value": "${{ secrets.DB_PASSWORD }}"
+              }
+            ]
 
 
   deploy:
