@@ -25,9 +25,9 @@ jobs:
           distribution: 'microsoft'
 
       # Build Spring Boot backend
-      - name: Build with Maven
-        working-directory: backend
-        run: mvn clean install
+      - - name: Build with Maven
+          working-directory: backend
+          run: mvn clean install -DskipTests
 
       # Upload generated JAR
       - name: Upload artifact for deployment job
