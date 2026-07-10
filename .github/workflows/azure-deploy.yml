@@ -36,7 +36,9 @@ jobs:
       # Build Spring Boot backend
       - name: Build with Maven
         working-directory: backend
-        run: ./mvnw clean install -DskipTests
+        run: |
+          chmod +x mvnw
+          ./mvnw clean install -DskipTests
 
 
       # Upload generated JAR
