@@ -135,14 +135,13 @@ public class ProductController {
                 try {
                     // Remove brackets and parse as simple list
                     String cleanFeatures = features.replaceAll("[\\[\\]\"']", "");
-                    List<String> featureList = List.of(cleanFeatures.split(","));
-                    featureList = featureList.stream()
+                    List<String> featureList = Arrays.stream(cleanFeatures.split(","))
                         .map(String::trim)
                         .filter(f -> !f.isEmpty())
-                        .toList();
+                        .collect(Collectors.toCollection(ArrayList::new));
                     product.setFeatures(featureList);
                 } catch (Exception e) {
-                    product.setFeatures(List.of());
+                    product.setFeatures(new ArrayList<>());
                 }
             }
             
@@ -300,14 +299,13 @@ public class ProductController {
                 try {
                     // Remove brackets and parse as simple list
                     String cleanFeatures = features.replaceAll("[\\[\\]\"']", "");
-                    List<String> featureList = List.of(cleanFeatures.split(","));
-                    featureList = featureList.stream()
+                    List<String> featureList = Arrays.stream(cleanFeatures.split(","))
                         .map(String::trim)
                         .filter(f -> !f.isEmpty())
-                        .toList();
+                        .collect(Collectors.toCollection(ArrayList::new));
                     existingProduct.setFeatures(featureList);
                 } catch (Exception e) {
-                    existingProduct.setFeatures(List.of());
+                    existingProduct.setFeatures(new ArrayList<>());
                 }
             }
             
@@ -412,7 +410,9 @@ public class ProductController {
             existingProduct.setOriginalPrice(product.getOriginalPrice());
             existingProduct.setCategory(product.getCategory());
             existingProduct.setShortDesc(product.getShortDesc());
-            existingProduct.setFeatures(product.getFeatures());
+            if (product.getFeatures() != null) {
+                existingProduct.setFeatures(new ArrayList<>(product.getFeatures()));
+            }
 
             if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
                 existingProduct.setImageUrl(product.getImageUrl());
@@ -425,6 +425,9 @@ public class ProductController {
             }
             if (product.getImageUrl3() != null && !product.getImageUrl3().isEmpty()) {
                 existingProduct.setImageUrl3(product.getImageUrl3());
+            }
+            if (product.getFeatures() != null) {
+                existingProduct.setFeatures(new ArrayList<>(product.getFeatures()));
             }
 
             return ResponseEntity.ok(productRepository.save(existingProduct));
