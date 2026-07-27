@@ -26,7 +26,7 @@ import com.example.demo.repository.ProductRepository;
 
 @RestController
 @RequestMapping("/api/reports")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://secuengineeringg.netlify.app"})
 public class ReportController {
     
     @Autowired

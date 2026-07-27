@@ -30,7 +30,7 @@ import com.example.demo.repository.SalesHistoryRepository;
 
 @RestController
 @RequestMapping("/api/orders")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://secuengineeringg.netlify.app"})
 public class OrderController {
 
     @Autowired
