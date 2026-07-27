@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api';
 
 const AdminPanel = () => {
   const [formData, setFormData] = useState({
@@ -29,7 +30,7 @@ const AdminPanel = () => {
   // Fetch all products
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/products');
+      const response = await apiFetch('/api/products');
       const data = await response.json();
       setProducts(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -42,7 +43,7 @@ const AdminPanel = () => {
   // Fetch all categories
   const fetchCategories = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/categories/active');
+      const response = await apiFetch('/api/categories/active');
       const data = await response.json();
       setCategories(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -158,12 +159,13 @@ const AdminPanel = () => {
         formDataToSend.append('name', formData.name);
         formDataToSend.append('brand', formData.brand);
         formDataToSend.append('price', parseFloat(formData.price));
-        formDataToSend.append('originalPrice', formData.originalPrice ? parseFloat(formData.originalPrice) : null);
+        if (formData.originalPrice !== '') {
+          formDataToSend.append('originalPrice', parseFloat(formData.originalPrice));
+        }
         formDataToSend.append('category', formData.category);
         formDataToSend.append('shortDesc', formData.shortDesc);
         formDataToSend.append('features', JSON.stringify(filteredFeatures));
-        
-        // Append images
+
         if (formData.imageFile) {
           formDataToSend.append('image', formData.imageFile);
         }
@@ -178,25 +180,11 @@ const AdminPanel = () => {
         }
 
         const url = editMode 
-          ? `http://localhost:8080/api/products/${editId}`
-          : 'http://localhost:8080/api/products';
+          ? `/api/products/${editId}`
+          : '/api/products';
         
-        const method = editMode ? 'PUT' : 'POST';
-
-        console.log('Sending FormData with images:', {
-          name: formData.name,
-          brand: formData.brand,
-          price: formData.price,
-          images: [
-            formData.imageFile?.name,
-            formData.imageFile1?.name,
-            formData.imageFile2?.name,
-            formData.imageFile3?.name
-          ].filter(Boolean)
-        });
-
-        const response = await fetch(url, {
-          method: method,
+        const response = await apiFetch(url, {
+          method: 'POST',
           body: formDataToSend,
         });
 
@@ -223,19 +211,20 @@ const AdminPanel = () => {
           category: formData.category,
           shortDesc: formData.shortDesc,
           features: filteredFeatures,
-          imageUrl: formData.imagePreview
+          imageUrl: formData.imagePreview,
+          imageUrl1: formData.imagePreview1,
+          imageUrl2: formData.imagePreview2,
+          imageUrl3: formData.imagePreview3
         };
 
         const url = editMode 
-          ? `http://localhost:8080/api/products/${editId}`
-          : 'http://localhost:8080/api/products';
+          ? `/api/products/${editId}`
+          : '/api/products';
         
         const method = editMode ? 'PUT' : 'POST';
 
-        console.log('Sending JSON (no image):', productData);
-
-        const response = await fetch(url, {
-          method: method,
+        const response = await apiFetch(url, {
+          method,
           headers: {
             'Content-Type': 'application/json',
           },
@@ -298,7 +287,13 @@ const AdminPanel = () => {
       shortDesc: product.shortDesc,
       features: product.features && product.features.length > 0 ? product.features : [''],
       imageFile: null,
-      imagePreview: product.imageUrl || ''
+      imagePreview: product.imageUrl || '',
+      imageFile1: null,
+      imagePreview1: product.imageUrl1 || '',
+      imageFile2: null,
+      imagePreview2: product.imageUrl2 || '',
+      imageFile3: null,
+      imagePreview3: product.imageUrl3 || ''
     });
     setEditMode(true);
     setEditId(product.id);
@@ -309,7 +304,7 @@ const AdminPanel = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await fetch(`http://localhost:8080/api/products/${id}`, {
+const response = await apiFetch(`/api/products/${id}`, {
           method: 'DELETE',
         });
 

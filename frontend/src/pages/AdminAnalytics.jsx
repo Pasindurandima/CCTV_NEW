@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../utils/api';
 import '../styles/AdminAnalytics.css';
 
 const AdminAnalytics = () => {
@@ -10,7 +11,7 @@ const AdminAnalytics = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/products');
+      const response = await apiFetch('/api/products');
       const data = await response.json();
       setProducts(data);
     } catch (error) {

@@ -100,9 +100,9 @@ function Home() {
             {/* Right Image */}
             <div className="flex justify-center">
               <img 
-                src="/assets/hero3.png" 
+                src="/assets/collection.png" 
                 alt="Security Camera" 
-                className="w-full max-w-2xl h-auto"
+                className="w-full max-w-lg h-auto"
                 onError={(e) => {
                   e.target.style.display = 'none';
                 }}

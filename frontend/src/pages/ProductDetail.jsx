@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { apiFetch } from '../utils/api';
 import ProductImageSlideshow from '../components/ProductImageSlideshow';
 
 const CONTACT_NUMBERS = {
@@ -21,7 +22,7 @@ function ProductDetail() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:8080/api/products/${id}`);
+        const response = await apiFetch(`/api/products/${id}`);
         if (!response.ok) {
           throw new Error('Product not found');
         }
@@ -105,7 +106,7 @@ function ProductDetail() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10">
         {/* Product Image Section */}
-        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 sticky top-20 md:top-24 h-fit">
+        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 md:sticky md:top-20 h-fit">
             {/* Product Images Slideshow */}
             <ProductImageSlideshow images={product.imageUrls || (product.imageUrl ? [product.imageUrl] : [])} name={product.name} />
           {product.brand && (

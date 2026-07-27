@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { apiFetch } from '../utils/api';
 
 function Store() {
   const navigate = useNavigate();
@@ -8,36 +9,62 @@ function Store() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showQuantityModal, setShowQuantityModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
 
   // Fetch products from backend
   useEffect(() => {
+    const cachedProducts = localStorage.getItem('storeProductsCache');
+    const hasCache = Boolean(cachedProducts);
+
+    if (hasCache) {
+      try {
+        setProducts(JSON.parse(cachedProducts));
+        setLoading(false);
+      } catch (err) {
+        console.warn('Failed to parse cached store products:', err);
+      }
+    }
+
     const fetchProducts = async () => {
       try {
-        setLoading(true);
-        const response = await fetch('http://localhost:8080/api/products');
+        if (hasCache) {
+          setIsRefreshing(true);
+        } else {
+          setLoading(true);
+        }
+
+        const response = await apiFetch('/api/products');
         if (!response.ok) {
           throw new Error('Failed to fetch products');
         }
         const data = await response.json();
         setProducts(data);
+        localStorage.setItem('storeProductsCache', JSON.stringify(data));
         setError(null);
       } catch (err) {
         console.error('Error fetching products:', err);
-        setError(err.message);
+        if (!hasCache) {
+          setError(err.message);
+        }
       } finally {
-        setLoading(false);
+        if (hasCache) {
+          setIsRefreshing(false);
+        } else {
+          setLoading(false);
+        }
       }
     };
 
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/categories/active');
+        const response = await apiFetch('/api/categories/active');
         if (!response.ok) {
           throw new Error('Failed to fetch categories');
         }
@@ -179,23 +206,23 @@ function Store() {
     
   */
 
-  const filteredProducts = products.filter(product => {
-    const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          (product.brand && product.brand.toLowerCase().includes(searchQuery.toLowerCase()));
-    return matchesCategory && matchesSearch;
-  });
+  const filteredProducts = React.useMemo(() => {
+    return products.filter(product => {
+      const matchesCategory = !selectedCategory || product.category === selectedCategory;
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (product.brand && product.brand.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesCategory && matchesSearch;
+    });
+  }, [products, selectedCategory, searchQuery]);
 
   const handleOrderNowClick = (product) => {
-    setSelectedProduct(product);
-    setQuantity(1);
-    setShowQuantityModal(true);
+    navigate(`/product/${product.id}`);
   };
 
   const handleConfirmOrder = () => {
     if (selectedProduct) {
-      addToCart({ ...selectedProduct, quantity });
+      addToCart({ ...selectedProduct, selectedQuantity: quantity });
       setShowQuantityModal(false);
       setSelectedProduct(null);
       navigate('/checkout');
@@ -246,7 +273,7 @@ function Store() {
         <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6 md:gap-8">
           {/* Sidebar - At same height as title */}
           <aside className="hidden md:block">
-            <div className="bg-white rounded-lg shadow-lg sticky top-20 md:top-24 h-[calc(100vh-100px)] flex flex-col">
+            <div className="bg-white rounded-lg shadow-lg lg:sticky lg:top-20 lg:h-[calc(100vh-100px)] flex flex-col">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-3 md:mb-4 uppercase text-center md:text-left p-4 md:p-6 pb-0">Categories</h2>
               <div className="space-y-1.5 md:space-y-2 overflow-y-auto px-4 md:px-6 pb-4 md:pb-6 flex-1 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                 <button
@@ -294,34 +321,57 @@ function Store() {
               />
             </div>
 
-            {/* Mobile Categories Dropdown */}
+            {/* Mobile Categories Dropdown (expand/collapse) */}
             <div className="md:hidden mb-6">
-              <div className="bg-white rounded-lg shadow-lg p-4">
-                <h2 className="text-lg font-bold text-gray-800 mb-3 uppercase">Categories</h2>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setSelectedCategory('')}
-                    className={`w-full text-left px-3 py-2 rounded-lg transition-all font-medium text-sm ${
-                      selectedCategory === ''
-                        ? 'bg-orange-500 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    All Products
-                  </button>
-                  {categories.map((category) => (
+              <div className="bg-white rounded-lg shadow-lg">
+                <button
+                  onClick={() => setCategoriesOpen((s) => !s)}
+                  className="w-full flex items-center justify-between p-4 text-left"
+                  aria-expanded={categoriesOpen}
+                >
+                  <div>
+                    <h2 className="text-lg font-bold text-gray-800 uppercase">Categories</h2>
+                    <p className="text-sm text-gray-500 mt-1">{categories.length} options</p>
+                  </div>
+                  <div className="ml-4">
+                    <svg
+                      className={`w-6 h-6 text-gray-600 transform transition-transform duration-200 ${categoriesOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </button>
+
+                <div className={`px-4 pb-4 ${categoriesOpen ? 'block' : 'hidden'}`}>
+                  <div className="space-y-2">
                     <button
-                      key={category.id}
-                      onClick={() => setSelectedCategory(category.name)}
+                      onClick={() => { setSelectedCategory(''); setCategoriesOpen(false); }}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-all font-medium text-sm ${
-                        selectedCategory === category.name
+                        selectedCategory === ''
                           ? 'bg-orange-500 text-white shadow-md'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >
-                      {category.name}
+                      All Products
                     </button>
-                  ))}
+                    {categories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => { setSelectedCategory(category.name); setCategoriesOpen(false); }}
+                        className={`w-full text-left px-3 py-2 rounded-lg transition-all font-medium text-sm ${
+                          selectedCategory === category.name
+                            ? 'bg-orange-500 text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {category.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -341,6 +391,7 @@ function Store() {
                         <img 
                           src={product.imageUrl1 || product.imageUrl} 
                           alt={product.name}
+                          loading="lazy"
                           className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                       ) : (
@@ -445,8 +496,8 @@ function Store() {
 
         {/* Quantity Selection Modal */}
         {showQuantityModal && selectedProduct && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000] p-4">
-            <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-[1000] p-4">
+            <div className="bg-white/95 rounded-xl shadow-2xl max-w-md w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">Select Quantity</h2>
               
               {/* Product Info */}
