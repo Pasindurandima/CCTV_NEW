@@ -1,5 +1,6 @@
 package com.example.demo.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,6 +26,9 @@ public interface SalesHistoryRepository extends JpaRepository<SalesHistory, Long
     
     // Get all sales history ordered by completed date descending
     List<SalesHistory> findAllByOrderByCompletedDateDesc();
+
+    // Find sales history between completed dates
+    List<SalesHistory> findByCompletedDateBetween(LocalDateTime start, LocalDateTime end);
     
     // Search across multiple fields
     @Query("SELECT s FROM SalesHistory s WHERE " +

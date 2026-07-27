@@ -23,6 +23,7 @@ import com.example.demo.entity.Product;
 import com.example.demo.repository.InventoryRepository;
 import com.example.demo.repository.OrderRepository;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.SalesHistoryRepository;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -31,6 +32,9 @@ public class ReportController {
     
     @Autowired
     private OrderRepository orderRepository;
+    
+    @Autowired
+    private SalesHistoryRepository salesHistoryRepository;
     
     @Autowired
     private InventoryRepository inventoryRepository;
@@ -66,16 +70,16 @@ public class ReportController {
     
     // Sales Report
     private List<Map<String, Object>> getSalesReport(LocalDateTime start, LocalDateTime end) {
-        List<Order> orders = orderRepository.findByOrderDateBetween(start, end);
-        
-        return orders.stream().map(order -> {
+        List<com.example.demo.entity.SalesHistory> sales = salesHistoryRepository.findByCompletedDateBetween(start, end);
+
+        return sales.stream().map(sh -> {
             Map<String, Object> sale = new HashMap<>();
-            sale.put("orderId", order.getId());
-            sale.put("orderDate", order.getOrderDate());
-            sale.put("customerName", order.getCustomerName());
-            sale.put("productCount", order.getProductCount());
-            sale.put("totalAmount", order.getTotalAmount());
-            sale.put("status", order.getStatus());
+            sale.put("orderId", sh.getOrderId());
+            sale.put("orderDate", sh.getOrderDate());
+            sale.put("customerName", sh.getCustomerName());
+            sale.put("productCount", sh.getProductCount());
+            sale.put("totalAmount", sh.getTotalAmount());
+            sale.put("status", "COMPLETED");
             return sale;
         }).collect(Collectors.toList());
     }
