@@ -1,8 +1,11 @@
 package com.example.demo.controller;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +22,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -246,6 +248,23 @@ public class ProductController {
     }
 
     // Update product with file upload
+    @PostMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateProductMultipart(
+            @PathVariable("id") Long id,
+            @RequestParam String name,
+            @RequestParam String brand,
+            @RequestParam Double price,
+            @RequestParam(required = false) Double originalPrice,
+            @RequestParam String category,
+            @RequestParam String shortDesc,
+            @RequestParam(required = false) String features,
+            @RequestParam(required = false) MultipartFile image,
+            @RequestParam(required = false) MultipartFile image1,
+            @RequestParam(required = false) MultipartFile image2,
+            @RequestParam(required = false) MultipartFile image3) {
+        return updateProduct(id, name, brand, price, originalPrice, category, shortDesc, features, image, image1, image2, image3);
+    }
+
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProduct(
             @PathVariable("id") Long id,
@@ -256,10 +275,10 @@ public class ProductController {
             @RequestParam String category,
             @RequestParam String shortDesc,
             @RequestParam(required = false) String features,
-            @RequestPart(required = false) MultipartFile image,
-            @RequestPart(required = false) MultipartFile image1,
-            @RequestPart(required = false) MultipartFile image2,
-            @RequestPart(required = false) MultipartFile image3) {
+            @RequestParam(required = false) MultipartFile image,
+            @RequestParam(required = false) MultipartFile image1,
+            @RequestParam(required = false) MultipartFile image2,
+            @RequestParam(required = false) MultipartFile image3) {
         try {
             Optional<Product> productData = productRepository.findById(id);
 
