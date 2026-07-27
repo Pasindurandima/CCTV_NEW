@@ -4,8 +4,11 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,6 +31,8 @@ import com.example.demo.repository.ProductRepository;
 @RequestMapping("/api/products")
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://secuengineeringg.netlify.app"})
 public class ProductController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @Autowired
     private ProductRepository productRepository;
@@ -241,7 +247,7 @@ public class ProductController {
     }
 
     // Update product with file upload
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProduct(
             @PathVariable("id") Long id,
             @RequestParam String name,
@@ -251,10 +257,10 @@ public class ProductController {
             @RequestParam String category,
             @RequestParam String shortDesc,
             @RequestParam(required = false) String features,
-            @RequestParam(required = false) MultipartFile image,
-            @RequestParam(required = false) MultipartFile image1,
-            @RequestParam(required = false) MultipartFile image2,
-            @RequestParam(required = false) MultipartFile image3) {
+            @RequestPart(required = false) MultipartFile image,
+            @RequestPart(required = false) MultipartFile image1,
+            @RequestPart(required = false) MultipartFile image2,
+            @RequestPart(required = false) MultipartFile image3) {
         try {
             Optional<Product> productData = productRepository.findById(id);
 
@@ -364,13 +370,14 @@ public class ProductController {
             return ResponseEntity.ok(productRepository.save(existingProduct));
         } catch (Exception e) {
             e.printStackTrace();
+            String errorMessage = e.getMessage() != null ? e.getMessage() : e.toString();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Failed to update product: " + e.getMessage()));
+                    .body(new ErrorResponse("Failed to update product", errorMessage, HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }
     }
 
     // Backup: Update product with JSON (for API compatibility)
-    @PutMapping(value = "/{id}", consumes = "application/json")
+    @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateProductJson(@PathVariable("id") Long id, @RequestBody Product product) {
         try {
             Optional<Product> productData = productRepository.findById(id);
@@ -406,13 +413,26 @@ public class ProductController {
             existingProduct.setCategory(product.getCategory());
             existingProduct.setShortDesc(product.getShortDesc());
             existingProduct.setFeatures(product.getFeatures());
-            existingProduct.setImageUrl(product.getImageUrl());
+
+            if (product.getImageUrl() != null && !product.getImageUrl().isEmpty()) {
+                existingProduct.setImageUrl(product.getImageUrl());
+            }
+            if (product.getImageUrl1() != null && !product.getImageUrl1().isEmpty()) {
+                existingProduct.setImageUrl1(product.getImageUrl1());
+            }
+            if (product.getImageUrl2() != null && !product.getImageUrl2().isEmpty()) {
+                existingProduct.setImageUrl2(product.getImageUrl2());
+            }
+            if (product.getImageUrl3() != null && !product.getImageUrl3().isEmpty()) {
+                existingProduct.setImageUrl3(product.getImageUrl3());
+            }
 
             return ResponseEntity.ok(productRepository.save(existingProduct));
         } catch (Exception e) {
             e.printStackTrace();
+            String errorMessage = e.getMessage() != null ? e.getMessage() : e.toString();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ErrorResponse("Failed to update product: " + e.getMessage()));
+                    .body(new ErrorResponse("Failed to update product", errorMessage, HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }
     }
 
