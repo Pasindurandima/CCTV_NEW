@@ -31,7 +31,7 @@ import com.example.demo.repository.ProductRepository;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://secuengineeringg.netlify.app"})
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://secuengineering.netlify.app"})
 public class ProductController {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
