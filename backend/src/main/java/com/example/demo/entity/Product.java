@@ -40,6 +40,9 @@ public class Product {
     
     @Column(nullable = false)
     private String category;
+
+    @Column(unique = true)
+    private String slug;
     
     @Column(length = 500)
     private String shortDesc;
@@ -136,6 +139,14 @@ public class Product {
     
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
     
     public String getShortDesc() {

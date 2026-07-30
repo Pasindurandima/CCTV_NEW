@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.demo.dto.ErrorResponse;
 import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
+import com.example.demo.util.SlugUtils;
 
 @RestController
 @RequestMapping("/api/products")
@@ -50,12 +51,19 @@ public class ProductController {
         }
     }
 
-    // Get product by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Product> getProductById(@PathVariable("id") Long id) {
-        Optional<Product> productData = productRepository.findById(id);
-        return productData.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    // Get product by slug or ID (supports legacy ID lookups)
+    @GetMapping("/{identifier}")
+    public ResponseEntity<Product> getProductByIdentifier(@PathVariable("identifier") String identifier) {
+        try {
+            Long id = Long.parseLong(identifier);
+            Optional<Product> productData = productRepository.findById(id);
+            return productData.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (NumberFormatException ex) {
+            Optional<Product> productData = productRepository.findBySlug(identifier);
+            return productData.map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+        }
     }
 
     // Get products by category
@@ -126,6 +134,8 @@ public class ProductController {
 
             Product product = new Product();
             product.setName(name);
+            String slug = SlugUtils.createUniqueSlug(name, candidate -> productRepository.findBySlug(candidate).isPresent());
+            product.setSlug(slug);
             product.setBrand(brand);
             product.setPrice(price);
             product.setOriginalPrice(originalPrice);
@@ -307,6 +317,11 @@ public class ProductController {
 
             Product existingProduct = productData.get();
             existingProduct.setName(name);
+            String slug = SlugUtils.createUniqueSlug(name, candidate -> {
+                Optional<Product> existing = productRepository.findBySlug(candidate);
+                return existing.isPresent() && !existing.get().getId().equals(existingProduct.getId());
+            });
+            existingProduct.setSlug(slug);
             existingProduct.setBrand(brand);
             existingProduct.setPrice(price);
             existingProduct.setOriginalPrice(originalPrice);
@@ -424,6 +439,11 @@ public class ProductController {
 
             Product existingProduct = productData.get();
             existingProduct.setName(product.getName());
+            String slug = SlugUtils.createUniqueSlug(product.getName(), candidate -> {
+                Optional<Product> existing = productRepository.findBySlug(candidate);
+                return existing.isPresent() && !existing.get().getId().equals(existingProduct.getId());
+            });
+            existingProduct.setSlug(slug);
             existingProduct.setBrand(product.getBrand());
             existingProduct.setPrice(product.getPrice());
             existingProduct.setOriginalPrice(product.getOriginalPrice());
