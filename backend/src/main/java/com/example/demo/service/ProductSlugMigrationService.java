@@ -10,11 +10,18 @@ import com.example.demo.entity.Product;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.util.SlugUtils;
 
+import jakarta.annotation.PostConstruct;
+
 @Service
 public class ProductSlugMigrationService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @PostConstruct
+    public void initializeMissingSlugs() {
+        generateMissingSlugs();
+    }
 
     public void generateMissingSlugs() {
         List<Product> products = productRepository.findAll();
