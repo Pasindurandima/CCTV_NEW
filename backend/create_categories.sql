@@ -11,16 +11,27 @@ CREATE TABLE IF NOT EXISTS categories (
 
 -- Insert default categories
 INSERT INTO categories (name, description, display_order, is_active, created_at, updated_at) VALUES
-('Wireless Camera', 'WiFi and battery-powered security cameras', 1, TRUE, NOW(), NOW()),
-('IP Camera', 'Network-based high-resolution security cameras', 2, TRUE, NOW(), NOW()),
-('Analog CCTV', 'Traditional analog CCTV cameras and systems', 3, TRUE, NOW(), NOW()),
-('DVR', 'Digital Video Recorders for analog camera systems', 4, TRUE, NOW(), NOW()),
-('NVR', 'Network Video Recorders for IP camera systems', 5, TRUE, NOW(), NOW()),
-('CCTV Package', 'Complete CCTV system packages', 6, TRUE, NOW(), NOW()),
-('Hard Drive Memory', 'Storage solutions for surveillance systems', 7, TRUE, NOW(), NOW()),
-('Cameras', 'General purpose security cameras', 8, TRUE, NOW(), NOW()),
-('Mobile Accessories', 'Cables, power supplies, and mounting accessories', 9, TRUE, NOW(), NOW()),
-('Power Bank', 'Portable power banks and charging solutions', 10, TRUE, NOW(), NOW());
+('CCTV Cameras', 'General CCTV surveillance cameras for home and business security.', 1, TRUE, NOW(), NOW()),
+('Wireless Cameras', 'Wi-Fi, battery-powered and wireless smart security cameras.', 2, TRUE, NOW(), NOW()),
+('IP Cameras', 'IP network cameras with remote monitoring and smart features.', 3, TRUE, NOW(), NOW()),
+('Analog CCTV Cameras', 'Analog CCTV cameras including Turbo HD and ColorVu series.', 4, TRUE, NOW(), NOW()),
+('PTZ Cameras', 'Pan-Tilt-Zoom cameras with remote control and auto tracking.', 5, TRUE, NOW(), NOW()),
+('Dome Cameras', 'Indoor and outdoor dome-style security cameras.', 6, TRUE, NOW(), NOW()),
+('Bullet Cameras', 'Bullet-style outdoor surveillance cameras.', 7, TRUE, NOW(), NOW()),
+('Baby Monitor Cameras', 'Smart baby monitoring cameras with two-way audio.', 8, TRUE, NOW(), NOW()),
+('4G Cameras', '4G LTE security cameras for locations without Wi-Fi.', 9, TRUE, NOW(), NOW()),
+('Solar Cameras', 'Solar-powered wireless surveillance cameras.', 10, TRUE, NOW(), NOW()),
+('DVR', 'Digital Video Recorders for analog CCTV systems.', 11, TRUE, NOW(), NOW()),
+('NVR', 'Network Video Recorders for IP camera systems.', 12, TRUE, NOW(), NOW()),
+('CCTV Packages', 'Complete CCTV packages including cameras, recorder and accessories.', 13, TRUE, NOW(), NOW()),
+('Hard Drives', 'Surveillance hard disk drives for continuous recording.', 14, TRUE, NOW(), NOW()),
+('Memory Cards', 'Memory cards for security cameras and recording devices.', 15, TRUE, NOW(), NOW()),
+('CCTV Accessories', 'CCTV accessories including power supplies, brackets, cables and connectors.', 16, TRUE, NOW(), NOW()),
+('Network Equipment', 'Networking equipment including switches, routers, PoE devices and cables.', 17, TRUE, NOW(), NOW()),
+('Monitors', 'Professional CCTV monitoring displays and surveillance monitors.', 18, TRUE, NOW(), NOW()),
+('UPS & Power Backup', 'UPS systems and power backup solutions for security equipment.', 19, TRUE, NOW(), NOW()),
+('Power Banks', 'Portable power banks and backup charging devices.', 20, TRUE, NOW(), NOW()),
+('Biometric Attendance Systems', 'Biometric attendance systems with fingerprint and face recognition.', 21, TRUE, NOW(), NOW());
 
 -- Show created categories
 SELECT * FROM categories ORDER BY display_order;
